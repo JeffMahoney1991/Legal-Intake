@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.json({ ok: true, method: "GET" });
   }
@@ -8,5 +8,4 @@ module.exports = async function handler(req, res) {
   }
 
   return res.json({ ok: true, method: "POST", bodyType: typeof req.body });
-};  }
 }
