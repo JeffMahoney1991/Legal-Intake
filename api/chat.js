@@ -1,3 +1,7 @@
+export const config = {
+  maxDuration: 60,
+};
+
 export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.json({ status: "ok", hasKey: !!process.env.ANTHROPIC_API_KEY });
