@@ -3,15 +3,27 @@ export const config = {
 };
 
 export default async function handler(req) {
+  // GET request = diagnostic test
+  if (req.method === "GET") {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    return new Response(
+      JSON.stringify({
+        status: "Function is running",
+        hasApiKey: !!apiKey,
+        keyPrefix: apiKey ? apiKey.slice(0, 10) + "..." : "MISSING",
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "API key not configured", debug: "ANTHROPIC_API_KEY env var is missing" }),
+      JSON.stringify({ error: "API key not configured" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
