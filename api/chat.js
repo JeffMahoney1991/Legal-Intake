@@ -1,31 +1,25 @@
 export const config = {
-  runtime: "edge",
+  maxDuration: 60,
 };
 
-export default async function handler(req) {
+export default async function handler(req, res) {
+  if (req.method === "GET") {
+    return res.status(200).json({
+      status: "ok",
+      hasKey: !!process.env.ANTHROPIC_API_KEY,
+    });
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).send("Method not allowed");
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: "No API key" });
+  }
+
   try {
-    if (req.method === "GET") {
-      const apiKey = process.env.ANTHROPIC_API_KEY;
-      return new Response(
-        JSON.stringify({ status: "ok", hasKey: !!apiKey }),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    if (req.method !== "POST") {
-      return new Response("Method not allowed", { status: 405 });
-    }
-
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: "No API key" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    const body = await req.text();
-
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -33,19 +27,12 @@ export default async function handler(req) {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: body,
+      body: JSON.stringify(req.body),
     });
 
-    const responseText = await response.text();
-
-    return new Response(responseText, {
-      status: response.status,
-      headers: { "Content-Type": "application/json" },
-    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
   } catch (e) {
-    return new Response(
-      JSON.stringify({ error: e.message, stack: e.stack }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return res.status(500).json({ error: e.message, stack: e.stack });
   }
 }
