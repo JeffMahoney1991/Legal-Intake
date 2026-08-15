@@ -13,7 +13,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Read body manually in case auto-parsing fails with ESM
     let body;
     if (typeof req.body === "string") {
       body = req.body;
@@ -43,6 +42,7 @@ export default async function handler(req, res) {
     console.log("Status:", response.status);
     const data = await response.text();
     console.log("Response length:", data.length);
+    console.log("Response body:", data.substring(0, 500));
 
     return res.status(response.status).setHeader("Content-Type", "application/json").send(data);
   } catch (e) {
